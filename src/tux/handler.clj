@@ -3,7 +3,7 @@
             [compojure.handler :as handler]
             [clojure.tools.logging :as log]
             [hiccup.form :as form]
-            [hiccup.page :refer [html5]]
+            [hiccup.page :refer [html5 include-css]]
             [taoensso.carmine :as car :refer [wcar]]
             [compojure.route :as route]))
 
@@ -43,33 +43,45 @@
   {:status 200
    :body (html5
           [:head
+           (include-css "/css/tux.css")
            [:title "Tux.it"]]
           [:body
-           body])})
+           [:div.container
+            body
+            [:img.tux-img {:src "/tux.png"}]]])})
 
-(defn render-home [short-url]
-  (if short-url
-    [:h2 (str "HELLO " short-url)])
+(def not-found-page
+  [:p.text
+   "Sorry, you did not enter a valid url. "
+   [:a {:href "/"} "Home page"]])
+
+(def home
   (form/form-to
-   {:role "form"} [:post "/"]
-   (form/text-field "long-url")
+   {:role "form" :id "form"} [:post "/"]
+   (form/text-field {:placeholder "Long and boring url"} "long-url")
    [:button {:type "submit"} "Tux.it!"]))
 
 (defroutes app-routes
+  (route/resources "/")
   (GET "/" [short-url]
-       (layout (render-home short-url)))
+       (layout home))
 
   (POST "/" [long-url]
         (let [short-url (random-string)]
           (set-mapping short-url long-url)
-          (str "Your shortened url is: " "http://tux.it/" short-url)))
+          (layout
+           [:p.text
+            "Your shortened url is: "
+            [:a {:href (str "/" short-url)} (str "http://tux.it/" short-url)]])))
 
   (GET "/:id" [id]
        (if-let [long-url (get-mapping id)]
          (redirect-to long-url)
-         "Sorry, no shortener found"))
-  (route/resources "/")
-  (route/not-found "Not Found"))
+         (layout not-found-page)))
+
+  (route/not-found (layout
+                    [:p.text "Uh oh, not found!"
+                     [:a {:href "/"} "Home page"]])))
 
 (def app
   (handler/site app-routes))
