@@ -5,7 +5,8 @@
             [hiccup.form :as form]
             [hiccup.page :refer [html5 include-css]]
             [taoensso.carmine :as car :refer [wcar]]
-            [compojure.route :as route]))
+            [compojure.route :as route])
+  (:import [org.apache.log4j Logger]))
 
 (def redis-conn {:pool {} :spec {}})
 
@@ -25,7 +26,7 @@
 (defn random-valid-char []
   (nth valid-chars (.nextInt (java.util.Random.) (count valid-chars))))
 
-(defn random-string []
+(defn random-string [_]
   (apply str (repeatedly string-length random-valid-char)))
 
 (defn redirect-to [path]
@@ -67,12 +68,15 @@
        (layout home))
 
   (POST "/" [long-url]
-        (let [short-url (random-string)]
-          (set-mapping short-url long-url)
+        (let [short-url (atom "")]
+          (swap! short-url random-string)
+          (while (= 1 (wcar redis-conn (car/exists @short-url)))
+            (swap! short-url random-string))
+          (set-mapping @short-url long-url)
           (layout
            [:p.text
             "Your shortened url is: "
-            [:a {:href (str "/" short-url)} (str "http://tux.it/" short-url)]])))
+            [:a {:href (str "/" @short-url)} (str "http://tux.it/" @short-url)]])))
 
   (GET "/:id" [id]
        (if-let [long-url (get-mapping id)]
