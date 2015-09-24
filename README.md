@@ -4,13 +4,14 @@ This is a simple URL shortener written in Clojure.
 
 ## Prerequisites
 
-Just [Leiningen][1].
+[Leiningen][1] and [Redis][2].
 
 [1]: https://github.com/technomancy/leiningen
+[2]: http://redis.io/
 
 ## Running
 
-Make sure there is a redis instance running in the default port
+Make sure the redis instance is running in the default port
 (6379), then simply run
 
     lein ring server
