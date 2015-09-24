@@ -1,4 +1,4 @@
-# Tux.clj
+# Tux.clj [![Build Status](https://travis-ci.org/rill-event-sourcing/rill.svg?branch=travis-ci)](https://travis-ci.org/rill-event-sourcing/rill)
 
 This is a simple URL shortener written in Clojure.
 
