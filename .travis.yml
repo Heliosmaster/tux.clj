@@ -1,3 +1,6 @@
 language: clojure
 services:
   - redis-server
+before_install: make before
+script: make test
+after_success: make after
