@@ -4,3 +4,4 @@ services:
 before_install: make before
 script: make test
 after_success: make after
+sudo: false
